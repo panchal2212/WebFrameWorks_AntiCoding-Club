@@ -3,11 +3,15 @@ import Booking from '@/models/Booking';
 import User from '@/models/User';
 import { sendBookingEmail } from '@/lib/mailer';
 import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server'; // ✅ Import for type safety
 
-export async function PATCH(request: Request, context: { params: { id: string } }) {
-  await connectToDB();
-
+export async function PATCH(
+  request: NextRequest,
+  context: { params: { id: string } }
+) {
   const { id } = context.params;
+
+  await connectToDB();
 
   try {
     const booking = await Booking.findById(id)
@@ -34,7 +38,6 @@ export async function PATCH(request: Request, context: { params: { id: string } 
       return NextResponse.json({ error: 'Insufficient time credits' }, { status: 400 });
     }
 
-    // Transfer credits
     receiver.timeCredits -= time;
     giver.timeCredits += time;
 
