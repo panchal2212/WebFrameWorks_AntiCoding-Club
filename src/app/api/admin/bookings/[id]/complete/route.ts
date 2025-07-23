@@ -1,24 +1,35 @@
 import { connectToDB } from '@/lib/mongodb';
 import Booking from '@/models/Booking';
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
+import type { RouteHandlerContext } from 'next/dist/server/web/types';
 
-export async function PATCH(_: Request, { params }: { params: { id: string } }) {
+export async function PATCH(
+  request: NextRequest,
+  context: RouteHandlerContext<{ id: string }>
+) {
+  const { id } = context.params;
+
   await connectToDB();
 
   try {
-    const booking = await Booking.findById(params.id);
+    const booking = await Booking.findById(id);
 
-    if (!booking || booking.status !== 'confirmed') {
-      return NextResponse.json({ error: 'Booking not confirmed or not found' }, { status: 400 });
+    if (!booking) {
+      return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
+    }
+
+    if (booking.status === 'completed') {
+      return NextResponse.json({ message: 'Booking already completed' }, { status: 200 });
     }
 
     booking.status = 'completed';
     await booking.save();
 
-    console.log(`✅ Booking ${params.id} marked as completed`);
-    return NextResponse.json({ message: 'Booking marked as completed' });
+    console.log(`✅ Booking ${id} marked as completed by admin.`);
+
+    return NextResponse.json({ message: 'Booking completed' });
   } catch (err: any) {
-    console.error('❌ Error completing booking:', err.message);
+    console.error('❌ Completion error:', err.message);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
