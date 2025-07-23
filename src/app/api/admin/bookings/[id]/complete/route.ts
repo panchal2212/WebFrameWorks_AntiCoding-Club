@@ -1,13 +1,13 @@
-import { connectToDB } from '@/lib/mongodb';
 import Booking from '@/models/Booking';
+import { connectToDB } from '@/lib/mongodb';
 import { NextResponse, type NextRequest } from 'next/server';
-import type { RouteHandlerContext } from 'next/dist/server/web/types';
 
-export async function PATCH(
-  request: NextRequest,
-  context: RouteHandlerContext<{ id: string }>
-) {
-  const { id } = context.params;
+export async function PATCH(request: NextRequest, context: any) {
+  const id = context?.params?.id;
+
+  if (!id) {
+    return NextResponse.json({ error: 'Missing booking ID' }, { status: 400 });
+  }
 
   await connectToDB();
 
@@ -25,9 +25,8 @@ export async function PATCH(
     booking.status = 'completed';
     await booking.save();
 
-    console.log(`✅ Booking ${id} marked as completed by admin.`);
-
-    return NextResponse.json({ message: 'Booking completed' });
+    console.log(`✅ Booking ${id} marked as completed.`);
+    return NextResponse.json({ message: 'Booking marked as completed' });
   } catch (err: any) {
     console.error('❌ Completion error:', err.message);
     return NextResponse.json({ error: err.message }, { status: 500 });

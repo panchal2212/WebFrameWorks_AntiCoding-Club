@@ -1,32 +1,30 @@
 import { connectToDB } from '@/lib/mongodb';
 import Booking from '@/models/Booking';
-import { NextResponse, type NextRequest } from 'next/server';
-import type { RouteHandlerContext } from 'next/dist/server/web/types'; // ✅ correct typing
+import { NextResponse } from 'next/server';
 
-export async function PATCH(
-  request: NextRequest,
-  context: RouteHandlerContext<{ id: string }>
+export async function DELETE(
+  _: Request,
+  context: any // ✅ Let Next.js infer everything to avoid conflict with Vercel types
 ) {
-  const { id } = context.params;
+  const id = context.params?.id;
+
+  if (!id) {
+    return NextResponse.json({ error: 'Missing booking ID' }, { status: 400 });
+  }
 
   await connectToDB();
 
   try {
-    const booking = await Booking.findById(id);
+    const deletedBooking = await Booking.findByIdAndDelete(id);
 
-    if (!booking) {
+    if (!deletedBooking) {
       return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
     }
 
-    // Update logic here (customize as needed)
-    booking.status = 'updated';
-    await booking.save();
-
-    console.log(`📦 Booking ${id} patched by admin`);
-
-    return NextResponse.json({ message: 'Booking updated' });
-  } catch (err: any) {
-    console.error('❌ Booking update error:', err.message);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    console.log(`✅ Admin deleted booking ${id}`);
+    return NextResponse.json({ message: 'Booking deleted successfully' });
+  } catch (error: any) {
+    console.error('❌ Deletion error:', error.message);
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

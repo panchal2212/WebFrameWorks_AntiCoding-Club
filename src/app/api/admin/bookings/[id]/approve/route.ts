@@ -1,14 +1,9 @@
 import { connectToDB } from '@/lib/mongodb';
 import Booking from '@/models/Booking';
-import User from '@/models/User';
 import { sendBookingEmail } from '@/lib/mailer';
 import { NextResponse, type NextRequest } from 'next/server';
-import type { RouteHandlerContext } from 'next/dist/server/web/types'; // ✅ This is the key fix
 
-export async function PATCH(
-  request: NextRequest,
-  context: RouteHandlerContext<{ id: string }>
-) {
+export async function PATCH(request: NextRequest, context: any) {
   const { id } = context.params;
 
   await connectToDB();

@@ -1,13 +1,13 @@
 import { connectToDB } from '@/lib/mongodb';
 import Booking from '@/models/Booking';
 import { NextResponse, type NextRequest } from 'next/server';
-import type { RouteHandlerContext } from 'next/dist/server/web/types'; // ✅ key fix
 
-export async function PATCH(
-  request: NextRequest,
-  context: RouteHandlerContext<{ id: string }>
-) {
-  const { id } = context.params;
+export async function PATCH(request: NextRequest, context: any) {
+  const id = context?.params?.id;
+
+  if (!id) {
+    return NextResponse.json({ error: 'Missing booking ID' }, { status: 400 });
+  }
 
   await connectToDB();
 
@@ -26,10 +26,9 @@ export async function PATCH(
     await booking.save();
 
     console.log(`❌ Booking ${id} cancelled by admin.`);
-
-    return NextResponse.json({ message: 'Booking cancelled' });
+    return NextResponse.json({ message: 'Booking cancelled successfully' });
   } catch (err: any) {
-    console.error('❌ Cancellation error:', err.message);
+    console.error('❌ Cancel error:', err.message);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

@@ -1,13 +1,13 @@
-import { connectToDB } from '@/lib/mongodb';
 import Booking from '@/models/Booking';
 import { NextResponse, type NextRequest } from 'next/server';
-import type { RouteHandlerContext } from 'next/dist/server/web/types';
+import { connectToDB } from '@/lib/mongodb';
 
-export async function PATCH(
-  request: NextRequest,
-  context: RouteHandlerContext<{ id: string }>
-) {
-  const { id } = context.params;
+export async function PATCH(request: NextRequest, context: any) {
+  const id = context?.params?.id;
+
+  if (!id) {
+    return NextResponse.json({ error: 'Booking ID is missing' }, { status: 400 });
+  }
 
   await connectToDB();
 
@@ -25,11 +25,9 @@ export async function PATCH(
     booking.status = 'rejected';
     await booking.save();
 
-    console.log(`❌ Booking ${id} rejected by admin.`);
-
-    return NextResponse.json({ message: 'Booking rejected' });
+    return NextResponse.json({ message: 'Booking rejected successfully' }, { status: 200 });
   } catch (err: any) {
-    console.error('❌ Rejection error:', err.message);
+    console.error('Error rejecting booking:', err.message);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

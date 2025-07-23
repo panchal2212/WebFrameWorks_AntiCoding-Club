@@ -1,10 +1,14 @@
-// /app/api/admin/users/[id]/route.ts
-import { connectToDB } from '@/lib/mongodb';
 import User from '@/models/User';
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 
-export async function DELETE(_: Request, { params }: { params: { id: string } }) {
-  await connectToDB();
-  await User.findByIdAndDelete(params.id);
-  return NextResponse.json({ success: true });
+export async function DELETE(request: NextRequest, context: any) {
+  const id = context.params?.id;
+
+  try {
+    await User.findByIdAndDelete(id);
+    return NextResponse.json({ message: 'User deleted successfully' });
+  } catch (error: any) {
+    console.error('User delete error:', error.message);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 }

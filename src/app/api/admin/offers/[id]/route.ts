@@ -1,28 +1,25 @@
-import { connectToDB } from '@/lib/mongodb';
 import Offer from '@/models/ServiceOffer';
+import { connectToDB } from '@/lib/mongodb';
 import { NextResponse, type NextRequest } from 'next/server';
-import type { RouteHandlerContext } from 'next/dist/server/web/types';
 
-export async function DELETE(
-  request: NextRequest,
-  context: RouteHandlerContext<{ id: string }>
-) {
-  const { id } = context.params;
+export async function DELETE(request: NextRequest, context: any) {
+  const id = context?.params?.id;
+
+  if (!id) {
+    return NextResponse.json({ error: 'Offer ID is missing' }, { status: 400 });
+  }
 
   await connectToDB();
 
   try {
-    const deletedOffer = await Offer.findByIdAndDelete(id);
-
-    if (!deletedOffer) {
+    const deleted = await Offer.findByIdAndDelete(id);
+    if (!deleted) {
       return NextResponse.json({ error: 'Offer not found' }, { status: 404 });
     }
 
-    console.log(`🗑️ Offer ${id} deleted by admin.`);
-
     return NextResponse.json({ message: 'Offer deleted successfully' });
-  } catch (err: any) {
-    console.error('❌ Offer deletion error:', err.message);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  } catch (error: any) {
+    console.error('❌ Error deleting offer:', error.message);
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

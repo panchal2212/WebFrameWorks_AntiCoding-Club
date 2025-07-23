@@ -1,23 +1,26 @@
-import { connectToDB } from "@/lib/mongodb";
-import ServiceRequest from "@/models/ServiceRequest";
-import { NextResponse } from "next/server";
+import { connectToDB } from '@/lib/mongodb';
+import ServiceRequest from '@/models/ServiceRequest';
+import { NextResponse } from 'next/server';
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
-  await connectToDB();
-  const request = await ServiceRequest.findById(params.id);
-  if (!request) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  return NextResponse.json(request);
-}
+export async function GET(_: Request, context: any) {
+  const id = context?.params?.id;
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
-  await connectToDB();
-  const data = await req.json();
-  const updated = await ServiceRequest.findByIdAndUpdate(params.id, data, { new: true });
-  return NextResponse.json(updated);
-}
+  if (!id) {
+    return NextResponse.json({ error: 'Missing service request ID' }, { status: 400 });
+  }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
   await connectToDB();
-  await ServiceRequest.findByIdAndDelete(params.id);
-  return NextResponse.json({ message: "Deleted" });
+
+  try {
+    const request = await ServiceRequest.findById(id);
+
+    if (!request) {
+      return NextResponse.json({ error: 'Service request not found' }, { status: 404 });
+    }
+
+    return NextResponse.json(request);
+  } catch (error: any) {
+    console.error('❌ Fetch service request error:', error.message);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 }

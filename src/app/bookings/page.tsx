@@ -2,8 +2,23 @@
 
 import { useEffect, useState } from 'react';
 
+// Define the booking type
+type Booking = {
+  _id: string;
+  bookedBy?: {
+    _id: string;
+    name?: string;
+  };
+  bookedWith?: {
+    _id: string;
+    name?: string;
+  };
+  scheduledDate: string;
+  status: 'pending' | 'approved' | 'rejected';
+};
+
 export default function BookingsPage() {
-  const [bookings, setBookings] = useState([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
 
   useEffect(() => {
     const token = localStorage.getItem('timebank_token');
@@ -13,9 +28,9 @@ export default function BookingsPage() {
 
     fetch('/api/admin/bookings')
       .then(res => res.json())
-      .then(data => {
+      .then((data: Booking[]) => {
         const myBookings = data.filter(
-          (b: any) =>
+          (b: Booking) =>
             b.bookedBy?._id === userId || b.bookedWith?._id === userId
         );
         setBookings(myBookings);
@@ -45,7 +60,7 @@ export default function BookingsPage() {
         </div>
       ) : (
         <div className="grid gap-5">
-          {bookings.map((b: any) => (
+          {bookings.map((b) => (
             <div
               key={b._id}
               className="bg-[#1e293b] border border-gray-700 p-5 rounded-lg shadow hover:shadow-lg transition"
