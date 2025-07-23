@@ -2,12 +2,12 @@ import { connectToDB } from '@/lib/mongodb';
 import Booking from '@/models/Booking';
 import User from '@/models/User';
 import { sendBookingEmail } from '@/lib/mailer';
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server'; // ✅ Import for type safety
+import { NextResponse, type NextRequest } from 'next/server';
+import type { RouteHandlerContext } from 'next/dist/server/web/types'; // ✅ This is the key fix
 
 export async function PATCH(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: RouteHandlerContext<{ id: string }>
 ) {
   const { id } = context.params;
 
