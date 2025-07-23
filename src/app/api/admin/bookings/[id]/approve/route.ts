@@ -4,11 +4,13 @@ import User from '@/models/User';
 import { sendBookingEmail } from '@/lib/mailer';
 import { NextResponse } from 'next/server';
 
-export async function PATCH(_: Request, { params }: { params: { id: string } }) {
+export async function PATCH(request: Request, context: { params: { id: string } }) {
   await connectToDB();
 
+  const { id } = context.params;
+
   try {
-    const booking = await Booking.findById(params.id)
+    const booking = await Booking.findById(id)
       .populate('bookedBy')
       .populate('bookedWith')
       .populate('serviceOffer')
